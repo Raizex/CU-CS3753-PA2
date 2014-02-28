@@ -12,6 +12,7 @@
  * 	address, with the hostname and address being stored in ouptup.txt in
  * 	the format "hostname,address".
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +22,7 @@
 
 #define MINARGS 3 
 #define USAGE "<inputFilePath> <outputFilePath>"
-#define SBUFSIZE 1025
+#define SBUFFSIZE 1025
 #define INPUTFS "%1024s"
 
 int main(int argc, char *argv[]) {
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
 	int i;
 
 	/* Check Arguments */
-	if(argc < MINARGS
+	if(argc < MINARGS) {
 		fprintf(stderr, "Not enough arguments: %d\n", (argc - 1));
 		fprintf(stderr, "Usage:\n %s %s\n", argv[0], USAGE);
 		return EXIT_FAILURE;
