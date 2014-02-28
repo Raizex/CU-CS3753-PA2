@@ -11,6 +11,7 @@ lookup
 output.txt
 pthread-hello
 queueTest
+multi-lookup
 
 #LaTeX Cruf#
 handout/*.log
