@@ -30,7 +30,7 @@ util.o: util.c util.h
 pthread-hello.o: pthread-hello.c
 	$(CC) $(CFLAGS) $<
 
-lookup: multi-lookup.o queue.o util.o
+multi-lookup: multi-lookup.o queue.o util.o
 	$(CC) $(LFLAGS) $^ -o $@
 
 clean:
