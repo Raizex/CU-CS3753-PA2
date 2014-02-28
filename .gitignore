@@ -9,6 +9,8 @@ lookup
 
 #Output Files#
 output.txt
+pthread-hello
+queueTest
 
 #LaTeX Cruf#
 handout/*.log
