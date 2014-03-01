@@ -16,6 +16,8 @@
 #define QUEUE_H
 
 #include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 #define QUEUEMAXSIZE 50
 
@@ -31,6 +33,9 @@ typedef struct queue_s{
     int front;
     int rear;
     int maxSize;
+    pthread_mutex_t* mutex;
+    sem_t* content_sem;
+    sem_t* freespace_sem;
 } queue;
 
 /* Function to initilze a new queue

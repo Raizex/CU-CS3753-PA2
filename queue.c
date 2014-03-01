@@ -44,6 +44,16 @@ int queue_init(queue* q, int size){
     q->front = 0;
     q->rear = 0;
 
+    /* malloc synchronization structures */
+    q->mutex = malloc(sizeof(pthread_mutex_t));
+    q->content_sem = malloc(sizeof(sem_t));
+    q->freespace_sem = malloc(sizeof(sem_t));
+
+    /* initialize synchronization structures */
+    pthread_mutex_init(q->mutex, NULL);
+    sem_init(q->freespace_sem, 0, q->maxSize);
+    sem_init(q->content_sem, 0, q->maxSize);
+
     return q->maxSize;
 }
 
@@ -68,26 +78,39 @@ int queue_is_full(queue* q){
 void* queue_pop(queue* q){
     void* ret_payload;
 	
-    if(queue_is_empty(q)){
+    /*if(queue_is_empty(q)){
 	return NULL;
-    }
+    }*/
 	
+    while(sem_wait(q->content_sem));
+    pthread_mutex_lock(q->mutex);
+
+    sem_post(q->freespace_sem);
+
     ret_payload = q->array[q->front].payload;
     q->array[q->front].payload = NULL;
     q->front = ((q->front + 1) % q->maxSize);
+
+    pthread_mutex_unlock(q->mutex);
 
     return ret_payload;
 }
 
 int queue_push(queue* q, void* new_payload){
     
-    if(queue_is_full(q)){
+    /*if(queue_is_full(q)){
 	return QUEUE_FAILURE;
-    }
+    }*/
+
+    while(sem_wait(q->freespace_sem));
+    pthread_mutex_lock(q->mutex);
+
+    sem_post(q->content_sem);
 
     q->array[q->rear].payload = new_payload;
-
     q->rear = ((q->rear+1) % q->maxSize);
+
+    pthread_mutex_unlock(q->mutex);
 
     return QUEUE_SUCCESS;
 }
@@ -99,4 +122,7 @@ void queue_cleanup(queue* q)
     }
 
     free(q->array);
+    sem_destroy(q->content_sem);
+    sem_destroy(q->freespace_sem);
+    pthread_mutex_destroy(q->mutex);
 }
