@@ -15,12 +15,16 @@
 
 #include "multi-lookup.h"
 
+queue hostqueue;
+
 int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
 	FILE* outputfp = NULL;
-    queue hostqueue;
     pthread_mutex_t* lock;
+    pthread_t requesterThreads[THREADCOUNT];
+    pthread_t resolverThreads[THREADCOUNT];
+    int return_value;
     
 	/* Check Arguments */
 	if(argc < MINARGS) {
@@ -36,6 +40,32 @@ int main(int argc, char *argv[]) {
     outputfp = fopen(argv[argc-1], "w");
     pthread_mutex_init(lock, NULL);
 
+    /* Start Resolver Threads */
+    int i;
+    for(i=0;i<THREADCOUNT;i++){
+        
+        return_value = pthread_create(&(requesterThreads[i]), NULL, request, argv[i+1]); 
+        if (return_value){
+            printf("ERROR: return value from pthread_create() is %d\n", return_value);
+            exit(EXIT_FAILURE);
+        }
+    }
 
 	return EXIT_SUCCESS;
+}
+
+void* request(void* filename)
+{
+    char hostname[SBUFFSIZE];
+    char* temp;
+    FILE* inputfp = fopen(filename, "r");
+    while(fscanf(inputfp, INPUTFS, (char*) filename) > 0)
+    {
+        temp = malloc(SBUFFSIZE);
+        strncpy(temp, hostname, SBUFFSIZE);
+        printf("HOSTNAME: %s\n", hostname);
+        queue_push(&hostqueue, temp);
+    }
+    fclose(inputfp);
+    return EXIT_SUCCESS;
 }

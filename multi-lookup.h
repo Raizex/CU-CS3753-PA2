@@ -26,5 +26,6 @@
 #define SBUFFSIZE 1025
 #define INPUTFS "%1024s"
 #define THREADCOUNT 5
-void* request();
+
+void* request(void* filename);
 void* fulfill();
