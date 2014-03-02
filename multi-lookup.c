@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
 	FILE* outputfp;
-    pthread_t requesterThreads[THREADCOUNT];
-    pthread_t resolverThreads[THREADCOUNT];
+    pthread_t requester_threads[THREADCOUNT];
+    pthread_t resolver_threads[THREADCOUNT];
     int return_value;
     
 	/* Check Arguments */
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     /* Start Requester Threads */
     int i;
     for(i=0;i<THREADCOUNT;i++){
-        return_value = pthread_create(&(requesterThreads[i]), NULL, request, argv[i+1]); 
+        return_value = pthread_create(&(requester_threads[i]), NULL, request, argv[i+1]); 
         if (return_value){
             fprintf(stderr, "ERROR: return value from pthread_create() is %d\n", return_value);
             exit(EXIT_FAILURE);
@@ -57,6 +57,13 @@ int main(int argc, char *argv[]) {
     }
 
     /* Start Resolver Threads */
+    for(i=0;i<THREADCOUNT;i++){
+        return_value = pthread_create(&(resolver_threads[i]), NULL, resolve, outputfp); 
+        if (return_value){
+            fprintf(stderr, "ERROR: return value from pthread_create() is %d\n", return_value);
+            exit(EXIT_FAILURE);
+        }
+    }
 
 	return EXIT_SUCCESS;
 }
