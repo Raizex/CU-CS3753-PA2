@@ -3,7 +3,7 @@
  * Author: Justin Huffman
  * Project: CSCI 3753 Programming Assignment 2
  * Create Date: 2014/02/27
- * Modify Date: 2014/02/27
+ * Modify Date: 2014/03/01
  * Description:
  * 	This file contains the implementation of the multi-lookup program.
  * 	This program accepts a list of input files wich each contain a list
@@ -13,34 +13,29 @@
  * 	the format "hostname,address".
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-
-#include "util.h"
-
-#define MINARGS 3 
-#define USAGE "<inputFilePath> <outputFilePath>"
-#define SBUFFSIZE 1025
-#define INPUTFS "%1024s"
+#include "multi-lookup.h"
 
 int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
-	FILE* inputfp = NULL;
 	FILE* outputfp = NULL;
-	char hostname[SBUFFSIZE];
-	char errorstr[SBUFFSIZE];
-	char firstipstr[INET6_ADDRSTRLEN];
-	int i;
-
+    queue hostqueue;
+    pthread_mutex_t* lock;
+    
 	/* Check Arguments */
 	if(argc < MINARGS) {
 		fprintf(stderr, "Not enough arguments: %d\n", (argc - 1));
 		fprintf(stderr, "Usage:\n %s %s\n", argv[0], USAGE);
 		return EXIT_FAILURE;
 	}
+ 
+    /* Initialize File Queue */
+    queue_init(&hostqueue, THREADCOUNT);
+    
+    /* Open Output File and Initialize File Lock */
+    outputfp = fopen(argv[argc-1], "w");
+    pthread_mutex_init(lock, NULL);
+
 
 	return EXIT_SUCCESS;
 }
