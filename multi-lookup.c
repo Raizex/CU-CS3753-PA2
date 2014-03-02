@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
 	FILE* outputfp;
-    pthread_mutex_t* lock;
+    pthread_mutex_t filelock = PTHREAD_MUTEX_INITIALIZER;
     pthread_t requesterThreads[THREADCOUNT];
     pthread_t resolverThreads[THREADCOUNT];
     int return_value;
@@ -39,8 +39,7 @@ int main(int argc, char *argv[]) {
     }
     
     /* Open Output File and Initialize File Lock */
-    //outputfp = fopen(argv[argc-1], "w");
-    //pthread_mutex_init(lock, NULL);
+    outputfp = fopen(argv[argc-1], "w");
 
     /* Start Resolver Threads */
     int i;
