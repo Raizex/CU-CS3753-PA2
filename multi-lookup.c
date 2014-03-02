@@ -65,6 +65,23 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /* Wait For Requesting Threads to Finish */
+    for(i=0;i<THREADCOUNT;i++){
+        pthread_join(requester_threads[i],NULL);
+    }
+
+    /* Signal That We Are Done Requesting and Close Queue */
+    requesting = 0;
+
+    /* Wait For Resolution Threads to Finish */
+    for(i=0;i<THREADCOUNT;i++){
+        pthread_join(resolver_threads[i],NULL);
+    }
+
+    /* Cleanup Queue and Close File */
+    queue_cleanup(&hostqueue);
+    fclose(outputfp);
+
 	return EXIT_SUCCESS;
 }
 
