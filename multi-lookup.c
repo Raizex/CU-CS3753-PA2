@@ -20,7 +20,7 @@ queue hostqueue;
 int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
-	FILE* outputfp = NULL;
+	FILE* outputfp;
     pthread_mutex_t* lock;
     pthread_t requesterThreads[THREADCOUNT];
     pthread_t resolverThreads[THREADCOUNT];
@@ -34,16 +34,17 @@ int main(int argc, char *argv[]) {
 	}
  
     /* Initialize File Queue */
-    queue_init(&hostqueue, THREADCOUNT);
+    if (queue_init(&hostqueue, THREADCOUNT) == QUEUE_FAILURE){
+        fprintf(stderr, "fileQ failed to initialize \n");
+    }
     
     /* Open Output File and Initialize File Lock */
-    outputfp = fopen(argv[argc-1], "w");
-    pthread_mutex_init(lock, NULL);
+    //outputfp = fopen(argv[argc-1], "w");
+    //pthread_mutex_init(lock, NULL);
 
     /* Start Resolver Threads */
     int i;
     for(i=0;i<THREADCOUNT;i++){
-        
         return_value = pthread_create(&(requesterThreads[i]), NULL, request, argv[i+1]); 
         if (return_value){
             printf("ERROR: return value from pthread_create() is %d\n", return_value);
