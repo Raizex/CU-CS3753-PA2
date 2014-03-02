@@ -28,4 +28,4 @@
 #define THREADCOUNT 5
 
 void* request(void* filename);
-void* fulfill();
+void* resolve(void* outputfp);

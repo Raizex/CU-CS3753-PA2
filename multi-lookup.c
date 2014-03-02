@@ -16,12 +16,13 @@
 #include "multi-lookup.h"
 
 queue hostqueue;
+pthread_mutex_t filelock = PTHREAD_MUTEX_INITIALIZER;
+int requesting = 1;
 
 int main(int argc, char *argv[]) {
 	
 	/* Local Vars */
 	FILE* outputfp;
-    pthread_mutex_t filelock = PTHREAD_MUTEX_INITIALIZER;
     pthread_t requesterThreads[THREADCOUNT];
     pthread_t resolverThreads[THREADCOUNT];
     int return_value;
@@ -33,29 +34,34 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
  
-    /* Initialize File Queue */
+    /* Initialize Host Queue */
     if (queue_init(&hostqueue, THREADCOUNT) == QUEUE_FAILURE){
-        fprintf(stderr, "fileQ failed to initialize \n");
+        fprintf(stderr, "Hostqueue failed to initialize \n");
     }
     
-    /* Open Output File and Initialize File Lock */
+    /* Open Output File */
     outputfp = fopen(argv[argc-1], "w");
+    if(outputfp == 0){
+        fprintf(stderr, "Error Opening Output File");
+        return EXIT_FAILURE;
+    }
 
-    /* Start Resolver Threads */
+    /* Start Requester Threads */
     int i;
     for(i=0;i<THREADCOUNT;i++){
         return_value = pthread_create(&(requesterThreads[i]), NULL, request, argv[i+1]); 
         if (return_value){
-            printf("ERROR: return value from pthread_create() is %d\n", return_value);
+            fprintf(stderr, "ERROR: return value from pthread_create() is %d\n", return_value);
             exit(EXIT_FAILURE);
         }
     }
 
+    /* Start Resolver Threads */
+
 	return EXIT_SUCCESS;
 }
 
-void* request(void* filename)
-{
+void* request(void* filename){
     char hostname[SBUFFSIZE];
     char* temp;
     FILE* inputfp = fopen(filename, "r");
@@ -67,5 +73,28 @@ void* request(void* filename)
         queue_push(&hostqueue, temp);
     }
     fclose(inputfp);
+    return EXIT_SUCCESS;
+}
+
+void* resolve(void* outputfp){
+    char* hostname;
+    char firstipstr[INET6_ADDRSTRLEN];
+    while(!queue_is_empty(&hostqueue) || requesting)
+    {
+        hostname = queue_pop(&hostqueue);
+        if(hostname == NULL)
+            return EXIT_SUCCESS;
+        if(dnslookup(hostname, firstipstr, sizeof(firstipstr)) == UTIL_FAILURE){
+            fprintf(stderr, "dnslookup error: %s\n", hostname);
+            free(hostname);
+        }
+
+        /* Safely write output to file */
+        pthread_mutex_lock(&filelock);
+        fprintf(outputfp, "%s,%s\n", hostname, firstipstr);
+        pthread_mutex_unlock(&filelock);
+
+        free(hostname);
+    }
     return EXIT_SUCCESS;
 }
